@@ -9,3 +9,6 @@ const registerUser = asyncHandler( async (req,res)=>{
 export {
     registerUser
 }
+
+
+// asynchandler ( async (req,res)=>{res.status(200).json({message : "ok"}  )

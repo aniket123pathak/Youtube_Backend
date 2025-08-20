@@ -12,18 +12,9 @@ export { asyncHandler }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+// asynchandler ( async (req,res)=>{res.status(200).json({message : "ok"}  )
+// const asyncHandler = (async (req,res)=>{res.status(200).json({message : "ok"})
+// requestHandler = async (req,res)=>{res.status(200).json({message : "ok"}
 
 
 // const asyncHandler = ()=>{}

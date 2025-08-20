@@ -8,4 +8,4 @@ router.route("/register").post(registerUser)
 
 
 
-export default router
+export default router // default export so we can import it by any name
