@@ -6,19 +6,10 @@ const router = Router();
 
 
 router.route("/register").post(
-    upload.fields([
-        {
-            name: "avatar",
-            maxCount : 1
-        },
-        {
-            name : "coverImage",
-            maxCount : 1
-        }
-    ]),    
+    upload.single(
+        "avatar"
+    ),
     registerUser
 )
-
-
 
 export default router // default export so we can import it by any name
