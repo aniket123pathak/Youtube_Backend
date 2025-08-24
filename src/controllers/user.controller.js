@@ -22,10 +22,11 @@ const registerUser = asyncHandler(async (req, res) => {
     if (existedUser) {
         throw new ApiError(409, "User with email or username already exists");
     }
-
+    console.log(req.files)
     // Securely handle file paths from req.files (populated by multer)
-    const avatarLocalPath = req.files?.avatar?.[0]?.path;
-    const coverimageLocalPath = req.files?.coverimage?.[0]?.path; 
+    const avatarLocalPath = req.files.avatar[0].path
+    const coverimageLocalPath = req.files.coverimage[0].path 
+    
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is required.");
