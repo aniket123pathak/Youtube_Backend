@@ -4,6 +4,10 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
+
+
+
+
 const registerUser = asyncHandler( async (req, res) => {
     // get user details from frontend
     // validation - not empty
@@ -78,4 +82,40 @@ const registerUser = asyncHandler( async (req, res) => {
 
 } )
 
-export { registerUser };
+const loginUser = asyncHandler( async (req,res) => {
+    //get credentials from the user
+    //get username and the password from the user
+    //if username exist in the db then check for the password
+    //if if username does not exist in the db then give error and tell user to register 
+
+    const { username , email , password } = req.body
+
+    if(!(username || email )){
+        throw new ApiError(401,"Username or Email is required");
+    }
+
+    const user = await User.findOne({
+        $or:[{username},{email}]
+    })//now user has every thing that is in the user model
+
+    if(!user){
+        throw new ApiError(404,"Invalid Email or Username")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(401,"Invalid credentials")
+    }
+
+    
+
+    
+
+
+})
+
+export { 
+    registerUser,
+    loginUser
+ };
