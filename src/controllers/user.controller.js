@@ -6,14 +6,13 @@ import { ApiResponse } from "../utils/apiResponse.js";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
     try {
-        const user = User.findById(userId);
-
+        const user = await User.findById(userId);
         const accessToken = await user.generateAccessToken()
-        const refreshToken = await user.generateRefreshoken()
-        //refresToken also should be in the database
+        const refreshToken = await user.generateRefreshToken()
 
+        //refresToken also should be in the database
         user.refreshToken = refreshToken
-        await user.save({validateBeforeSave : false})
+        await user.save( {validateBeforeSave : false} )
 
         return {accessToken,refreshToken}
         
@@ -21,8 +20,6 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
         throw new ApiError(500,"Something went wrong during generating the acccess token and the refresh tokens...!!!")
     }
 }
-
-
 
 const registerUser = asyncHandler( async (req, res) => {
     // get user details from frontend
@@ -54,7 +51,7 @@ const registerUser = asyncHandler( async (req, res) => {
     
     console.log(req.files)
 
-    const avatarLocalPath = req.files?.avatar[0]?.path;
+    const avatarLocalPath = req.files.avatar[0].path;
     //const coverimageLocalPath = req.files?.coverimage[0]?.path;
 
     let coverImageLocalPath;
@@ -106,7 +103,7 @@ const loginUser = asyncHandler( async (req,res) => {
 
     const { username , email , password } = req.body
 
-    if(!(username && email )){
+    if(!username && !email ){
         throw new ApiError(401,"Username or Email is required");
     }
 
@@ -177,10 +174,6 @@ const logoutUser = asyncHandler( async (req,res) => {
         new ApiResponse(200,{},"User Logged Out")
     )
 })
-
-
-
-
 
 
 export { 
