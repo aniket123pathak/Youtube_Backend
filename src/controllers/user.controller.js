@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary , deleteOldImage } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken"
 
@@ -21,6 +21,8 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
         throw new ApiError(500,"Something went wrong during generating the acccess token and the refresh tokens...!!!")
     }
 }
+
+
 
 const registerUser = asyncHandler( async (req, res) => {
     // get user details from frontend
@@ -284,6 +286,13 @@ const updateAvatar = asyncHandler(async(req,res)=>{
         throw new ApiError(401,"Avatar file is required")
     }
 
+    const temp = await User.findById(req.user?._id)
+    const oldPublicId = temp?.avatar?.public_id
+
+    if(!oldPublicId){
+        throw new ApiError(404,"No old Avatar Public Id Found")
+    }
+
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     
     if (!avatar.url) {
@@ -302,6 +311,8 @@ const updateAvatar = asyncHandler(async(req,res)=>{
         }
     ).select("-password")
 
+    await deleteOldImage(oldPublicId)
+
     return res
     .status(200)
     .json(new ApiResponse(200,user,"User Avatar updated Succesfully"))
@@ -311,9 +322,13 @@ const updateAvatar = asyncHandler(async(req,res)=>{
 const updateCoverImage = asyncHandler(async(req,res)=>{
     const coverimageLocalPath = req.file?.path
 
+
     if (!coverimageLocalPath) {
         throw new ApiError(401,"coverimage file is required")
     }
+
+    const temp = await User.findById(req.user?._id)
+    const oldPublicId = temp?.avatar?.public_id
 
     const coverimage = await uploadOnCloudinary(coverimageLocalPath);
     
@@ -332,6 +347,8 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
            new:true 
         }
     ).select("-password")
+
+    await deleteOldImage(oldPublicId);
 
     return res
     .status(200)
