@@ -260,8 +260,10 @@ const updateAccountInformation = asyncHandler(async(req,res)=>{
     const user = await User.findByIdAndDelete(
         req.user?._id,
         {
-            fullName : fullName,
-            email : email
+            $set : {
+                fullName : fullName,
+                email : email
+            }
         },
         {
             next : true
@@ -274,6 +276,8 @@ const updateAccountInformation = asyncHandler(async(req,res)=>{
         new ApiResponse(200,user,"User information updated succesfully")
     )
 })
+
+
 
 export { 
     registerUser,
