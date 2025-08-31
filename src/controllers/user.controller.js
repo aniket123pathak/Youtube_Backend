@@ -251,11 +251,36 @@ const getCurrentUser = asyncHandler(async(req,res)=>{
     .jsonn(new ApiResponse(201,req.user,"User fetched successfully"))
 })
 
+const updateAccountInformation = asyncHandler(async(req,res)=>{
+    const {fullName , email}=req.body
+    if(!(fullName||email)){
+        throw new ApiError(401,"All fields are required")
+    }
+
+    const user = await User.findByIdAndDelete(
+        req.user?._id,
+        {
+            fullName : fullName,
+            email : email
+        },
+        {
+            next : true
+        },
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,user,"User information updated succesfully")
+    )
+})
+
 export { 
     registerUser,
     loginUser,
     logoutUser,
     refreshAccessToken,
     changeCurrentPassword,
-    getCurrentUser
+    getCurrentUser,
+    updateAccountInformation
  }
