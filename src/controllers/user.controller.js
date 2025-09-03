@@ -23,7 +23,6 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
 }
 
 
-
 const registerUser = asyncHandler( async (req, res) => {
     // get user details from frontend
     // validation - not empty
@@ -97,6 +96,7 @@ const registerUser = asyncHandler( async (req, res) => {
     )
 
 } )
+
 
 const loginUser = asyncHandler( async (req,res) => {
     //get credentials from the user
@@ -178,6 +178,7 @@ const logoutUser = asyncHandler( async (req,res) => {
     )
 })
 
+
 const refreshAccessToken = asyncHandler(async(req,res)=>{
     const incomingRefreshToken = req.cookie.accessToken || req.body.accessToken
 
@@ -226,6 +227,7 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
     }
 })
 
+
 const changeCurrentPassword = asyncHandler(async(req,res)=>{
     const { oldPassword , newPassword } = req.body
 
@@ -246,12 +248,14 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
 
 })
 
+
 const getCurrentUser = asyncHandler(async(req,res)=>{
 
     return res
     .status(200)
     .jsonn(new ApiResponse(201,req.user,"User fetched successfully"))
 })
+
 
 const updateAccountInformation = asyncHandler(async(req,res)=>{
     const {fullName , email}=req.body
@@ -278,6 +282,7 @@ const updateAccountInformation = asyncHandler(async(req,res)=>{
         new ApiResponse(200,user,"User information updated succesfully")
     )
 })
+
 
 const updateAvatar = asyncHandler(async(req,res)=>{
     const avatarLocalPath = req.file?.path
@@ -319,6 +324,7 @@ const updateAvatar = asyncHandler(async(req,res)=>{
 
 })
 
+
 const updateCoverImage = asyncHandler(async(req,res)=>{
     const coverimageLocalPath = req.file?.path
 
@@ -355,6 +361,77 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
     .json(new ApiResponse(200,user,"User coverimage updated Succesfully"))
 })
 
+const getUserChannelProfile = asyncHandler(async(req,res)=>{
+    const { username } = req.params
+    
+    if(!username.trim()){
+        throw new ApiError(404,"Username Not found")
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match :{
+                username : username?.toLowerCase()
+            }
+        },
+        {
+            $lookup : {
+                from : "subscriptions",
+                localField : "_id",
+                foreignField : "channel",
+                as : "subscribers"
+            }
+        },
+        {
+            $lookup : {
+                from : "subscriptions",
+                localField:"_id",
+                foreignField:"subscriber",
+                as : "subscribedTo"
+            }
+        },
+        {
+            $addFields : {
+                subscribersCount : {
+                    $size : "$subscribers"
+                },
+                channelSubscribedToCount : {
+                    $size : "subscribedTo"
+                },
+                isSubscribed : {
+                    $cond : {
+                        if : {$in:[req.user?._id,"$subscribers.subscriber"]},
+                        then : true,
+                        else : false
+                    }
+                }
+            }
+        },
+        {
+            $project :{
+                username : 1,
+                email : 1,
+                fullName : 1,
+                avatar : 1,
+                coverimage : 1,
+                subscribersCount : 1,
+                channelSubscribedToCount : 1,
+                isSubscribed : 1,
+            }
+        }
+    ])
+
+    if (!channel?.length) {
+        throw new ApiError(404,"Channel Does not Exist")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,channel,"Channel / User Fetched Successfully")
+    )
+})
+
 export { 
     registerUser,
     loginUser,
@@ -364,5 +441,6 @@ export {
     getCurrentUser,
     updateAccountInformation,
     updateAvatar,
-    updateCoverImage
+    updateCoverImage,
+    getUserChannelProfile
  }
